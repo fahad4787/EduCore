@@ -4,7 +4,7 @@
 
 ### A Role-Based MERN Stack Web Application for Streamlining University Operations
 
-Manage Students • Professors • Courses • Attendance • Study Materials • Academic Records
+Manage Students • Faculty • Courses • Attendance • Study Materials • Academic Records
 
 ![MongoDB](https://img.shields.io/badge/MongoDB-6.x-green?style=for-the-badge\&logo=mongodb)
 ![Express](https://img.shields.io/badge/Express.js-4.x-black?style=for-the-badge\&logo=express)
@@ -243,7 +243,7 @@ http://localhost:5173
 
 ---
 
-## 🧠 Key Learnings
+## 🧠 Project Highlights
 
 Through the development of this project, I gained hands-on experience in:
 
