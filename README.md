@@ -2,7 +2,7 @@
 
 <div align="center">
 
-### A Full-Stack MERN Application for Managing University Operations
+### A Role-Based MERN Stack Web Application for Streamlining University Operations
 
 Manage Students • Professors • Courses • Attendance • Study Materials • Academic Records
 
@@ -28,39 +28,42 @@ The platform provides dedicated dashboards for:
 * 👨‍🏫 Professor
 * 👨‍🎓 Student
 
-The system simplifies user management, course management, attendance tracking, study material sharing, and result management through a centralized platform.
+The system simplifies user management, course management, attendance tracking, study material sharing, result management, and notice handling through a centralized platform.
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
-### 👨‍💼 Admin Panel
+### 👨‍💼 Admin Module
 
-* Secure Authentication
+* Secure Admin Authentication
 * Manage Students
 * Manage Professors
-* Manage Courses
+* Manage Courses and Subjects
 * Assign Professors to Courses
-* Publish Notices
+* Manage Notices
+* Approve or Reject Leave Requests
 * Monitor Academic Activities
 
-### 👨‍🏫 Professor Panel
+### 👨‍🏫 Professor Module
 
-* Secure Login
-* View Assigned Subjects
-* Upload Notes & Study Materials
+* Secure Authentication
+* View Assigned Courses
+* Upload Notes and Study Materials
 * Manage Student Attendance
-* Enter Marks & Results
+* Enter Marks and Results
 * Apply for Leave
+* View Notices
 
-### 👨‍🎓 Student Panel
+### 👨‍🎓 Student Module
 
-* Registration & Login
+* Registration and Login
 * View Enrolled Courses
-* Check Attendance
-* Access Study Materials
-* View Results & Marks
+* Check Attendance Records
+* View Marks and Results
+* Download Study Materials
 * Apply for Leave
+* View Notices
 
 ---
 
@@ -123,7 +126,8 @@ University-Management-System/
 │   ├── public/
 │   ├── src/
 │   ├── package.json
-│   └── vite.config.js
+│   ├── vite.config.js
+│   └── vercel.json
 │
 ├── backend/
 │   ├── controllers/
@@ -132,6 +136,7 @@ University-Management-System/
 │   ├── routes/
 │   ├── uploads/
 │   ├── scripts/
+│   ├── seed.js
 │   └── server.js
 │
 ├── .gitignore
@@ -155,32 +160,32 @@ University-Management-System/
 
 ---
 
-## ⚙️ Installation & Setup
+## ⚙️ Installation
 
-### Clone Repository
+### 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/baraiyash/University-Management-System.git
 cd University-Management-System
 ```
 
-### Install Backend Dependencies
+### 2️⃣ Install Backend Dependencies
 
 ```bash
 cd backend
 npm install
 ```
 
-### Install Frontend Dependencies
+### 3️⃣ Install Frontend Dependencies
 
 ```bash
 cd ../frontend
 npm install
 ```
 
-### Configure Environment Variables
+### 4️⃣ Configure Environment Variables
 
-Create a `.env` file inside the backend directory:
+Create a `.env` file inside the `backend/` directory.
 
 ```env
 PORT=5000
@@ -189,27 +194,27 @@ JWT_SECRET=your_secret_key
 NODE_ENV=development
 ```
 
----
-
-## ▶️ Run Backend
+### 5️⃣ Seed Demo Data (Optional)
 
 ```bash
 cd backend
-npm run dev
+node seed.js
 ```
 
----
-
-## ▶️ Run Frontend
+### 6️⃣ Run Backend Server
 
 ```bash
-cd frontend
 npm run dev
 ```
 
----
+### 7️⃣ Run Frontend
 
-## 🌐 Application URL
+```bash
+cd ../frontend
+npm run dev
+```
+
+### 8️⃣ Open in Browser
 
 ```text
 http://localhost:5173
@@ -217,13 +222,13 @@ http://localhost:5173
 
 ---
 
-## 🔐 User Roles & Permissions
+## 🔐 User Roles
 
-| Role      | Permissions                                           |
-| --------- | ----------------------------------------------------- |
-| Admin     | Manage students, professors, courses, notices, leaves |
-| Professor | Manage attendance, materials, leaves, marks           |
-| Student   | View attendance, materials, profile, notices, results |
+| Role      | Access                                                                     |
+| --------- | -------------------------------------------------------------------------- |
+| Admin     | Manage users (Professors, Students), courses, subjects, notices and leaves |
+| Professor | Manage attendance, materials, leaves, marks and view notices               |
+| Student   | View attendance, materials, profile, notices and results                   |
 
 ---
 
@@ -238,31 +243,23 @@ http://localhost:5173
 
 ---
 
-## 🧠 Learning Outcomes
+## 🧠 Key Learnings
 
-Through this project, I gained practical experience in:
+Through the development of this project, I gained hands-on experience in:
 
-* Full-Stack MERN Development
-* RESTful API Design
-* JWT Authentication
-* Protected Routes
-* MongoDB Schema Design
-* File Upload Handling
-* Role-Based Access Control
-* Deployment Workflows
-
----
-
-## 📸 Screenshots
-
-Add screenshots of:
-
-* Login Page
-* Admin Dashboard
-* Professor Dashboard
-* Student Dashboard
-* Course Management
-* Attendance Management
+* Full-Stack MERN Stack Development
+* RESTful API Design and Development
+* JWT Authentication & Authorization
+* Protected Routes and Middleware
+* Role-Based Access Control (RBAC)
+* MongoDB Database Design and Schema Modeling
+* State Management in React
+* Frontend Development using React and Tailwind CSS
+* File Upload Handling and Validation
+* API Integration using Axios
+* Git and GitHub Version Control
+* Deployment using Vercel and Render
+* Debugging and Performance Optimization
 
 ---
 
@@ -276,7 +273,7 @@ Add screenshots of:
 
 ## ⭐ Support
 
-If you found this project useful, consider giving it a star on GitHub.
+If you found this project useful, consider giving it a ⭐ on GitHub.
 
 ---
 
