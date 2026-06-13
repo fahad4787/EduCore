@@ -16,7 +16,18 @@ Manage Students • Faculty • Courses • Attendance • Study Materials • A
 
 </div>
 
-<!-- --- -->
+---
+
+## 🌐 Live Demo
+
+🔗 **[Visit Live Application](https://nexusuniversity.vercel.app)**
+
+### Demo Credentials
+
+📧 Email: `yash@gmail.com`
+🔑 Password: `yash123`
+
+---
 
 ## 📖 Overview
 
