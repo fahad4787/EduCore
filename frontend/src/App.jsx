@@ -45,8 +45,10 @@ const App = () => {
     return <Navigate to="/login" replace />;
   };
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '') || undefined;
+
   return (
-    <Router>
+    <Router basename={routerBasename}>
       <TitleUpdater />
       <Routes>
         <Route path="/" element={getDashboardHome()} />
