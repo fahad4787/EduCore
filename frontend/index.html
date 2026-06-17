@@ -9,6 +9,26 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // GitHub Pages SPA — restore path from ?/login style URLs
+      (function () {
+        var location = window.location;
+        if (location.search[1] === '/') {
+          var decoded = location.search
+            .slice(1)
+            .split('&')
+            .map(function (part) {
+              return part.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(
+            null,
+            null,
+            location.pathname.slice(0, -1) + decoded + location.hash
+          );
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

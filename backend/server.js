@@ -9,16 +9,16 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'https://fahad4787.github.io',
   ...(process.env.FRONTEND_URL || '').split(',').map((o) => o.trim()).filter(Boolean),
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS blocked: ${origin}`));
-    }
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (/^https:\/\/[\w-]+\.github\.io$/.test(origin)) return callback(null, true);
+    callback(null, false);
   },
   credentials: true,
 }));
