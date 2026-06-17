@@ -14,5 +14,7 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
-      - key: GROQ_API_KEY
+      - key: OPENAI_API_KEY
         sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini

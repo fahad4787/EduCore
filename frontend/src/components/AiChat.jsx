@@ -82,7 +82,7 @@ const AiChat = () => {
               <div className="ai-chat-header-icon">AI</div>
               <div>
                 <h4>EduCore Assistant</h4>
-                <p>{user.role} · Powered by AI</p>
+                <p>{user.role} · Powered by OpenAI</p>
               </div>
             </div>
             <button className="ai-chat-close" onClick={() => setOpen(false)} aria-label="Close chat">
