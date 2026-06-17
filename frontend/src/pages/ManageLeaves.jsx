@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Calendar, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import TableLoading from '../components/TableLoading';
 import { useToast } from '../context/ToastContext';
 const ManageLeaves = () => {
   const { user } = useContext(AuthContext);
@@ -71,7 +72,7 @@ const ManageLeaves = () => {
       <div className="page-header">
         <h2>Leave Requests</h2>
       </div>
-      <div className="glass-panel" style={{ overflowX: 'auto' }}>
+      <div className="card-panel table-card">
         <table className="data-table">
           <thead>
             <tr>
@@ -83,7 +84,7 @@ const ManageLeaves = () => {
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan="5" className="text-center">Loading...</td></tr> :
+            {loading ? <TableLoading cols={5} /> :
               leaves.map(leave => (
                 <tr key={leave._id}>
                   <td>{leave.student?.name || 'Unknown'}</td>

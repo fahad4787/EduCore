@@ -4,24 +4,61 @@ const Course = require('../models/Course');
 const Subject = require('../models/Subject');
 const Notice = require('../models/Notice');
 const Leave = require('../models/Leave');
+const Attendance = require('../models/Attendance');
+const StudyMaterial = require('../models/StudyMaterial');
 
 const bcrypt = require('bcrypt');
+
+const buildAttendanceTrend = (records, days = 14) => {
+  const trend = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const dayRecords = records.filter(r => {
+      const rd = new Date(r.date);
+      rd.setHours(0, 0, 0, 0);
+      return rd.getTime() === d.getTime();
+    });
+    const present = dayRecords.filter(r => r.status === 'Present').length;
+    const total = dayRecords.length;
+    trend.push({
+      date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      present,
+      absent: total - present,
+      rate: total > 0 ? Math.round((present / total) * 100) : null,
+    });
+  }
+  return trend;
+};
+
 const getDashboardStats = async (req, res) => {
   try {
     const totalStudents = await User.countDocuments({ role: 'Student' });
     const totalProfessors = await User.countDocuments({ role: 'Professor' });
     const totalCourses = await Course.countDocuments();
+    const totalSubjects = await Subject.countDocuments();
+    const totalNotices = await Notice.countDocuments();
+    const pendingLeaves = await Leave.countDocuments({ status: 'Pending' });
+    const totalMaterials = await StudyMaterial.countDocuments();
 
-    // Foolproof in-memory aggregation
     const courses = await Course.find();
     const students = await User.find({ role: 'Student' });
     const subjects = await Subject.find();
     const leaves = await Leave.find();
+    const attendanceRecords = await Attendance.find();
+    const recentNotices = await Notice.find()
+      .sort('-createdAt')
+      .limit(5)
+      .populate('createdBy', 'name')
+      .select('title audience createdAt createdBy');
 
     const courseMap = {};
-    courses.forEach(c => courseMap[c._id.toString()] = c.name);
+    courses.forEach(c => { courseMap[c._id.toString()] = c.name; });
 
-    // 1. Student Distribution
     const studentCountMap = {};
     students.forEach(s => {
       const courseId = s.enrolledCourse ? s.enrolledCourse.toString() : 'Unassigned';
@@ -32,7 +69,6 @@ const getDashboardStats = async (req, res) => {
       name, value: studentCountMap[name]
     }));
 
-    // 2. Subjects per Course
     const subjectCountMap = {};
     subjects.forEach(s => {
       const courseId = s.course ? s.course.toString() : 'Unassigned';
@@ -43,18 +79,52 @@ const getDashboardStats = async (req, res) => {
       name, count: subjectCountMap[name]
     }));
 
-    // 3. Leave Status
-    const leaveStatusMap = { 'Pending': 0, 'Approved': 0, 'Rejected': 0 };
+    const leaveStatusMap = { Pending: 0, Approved: 0, Rejected: 0 };
     leaves.forEach(l => {
-      if (leaveStatusMap[l.status] !== undefined) {
-        leaveStatusMap[l.status]++;
-      }
+      if (leaveStatusMap[l.status] !== undefined) leaveStatusMap[l.status]++;
     });
     const leaveStatus = Object.keys(leaveStatusMap).map(name => ({
       name, value: leaveStatusMap[name]
     }));
 
-    res.json({ totalStudents, totalProfessors, totalCourses, studentDistribution, subjectsPerCourse, leaveStatus });
+    const presentTotal = attendanceRecords.filter(r => r.status === 'Present').length;
+    const attendanceTotal = attendanceRecords.length;
+    const attendanceRate = attendanceTotal > 0
+      ? Math.round((presentTotal / attendanceTotal) * 100)
+      : 0;
+
+    const yearMap = {};
+    students.forEach(s => {
+      const yr = s.year || 'Unknown';
+      yearMap[yr] = (yearMap[yr] || 0) + 1;
+    });
+    const enrollmentByYear = Object.entries(yearMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    const attendanceTrend = buildAttendanceTrend(attendanceRecords);
+
+    res.json({
+      totalStudents,
+      totalProfessors,
+      totalCourses,
+      totalSubjects,
+      totalNotices,
+      pendingLeaves,
+      totalMaterials,
+      attendanceRate,
+      studentDistribution,
+      subjectsPerCourse,
+      leaveStatus,
+      enrollmentByYear,
+      attendanceTrend,
+      recentNotices: recentNotices.map(n => ({
+        title: n.title,
+        audience: n.audience,
+        createdAt: n.createdAt,
+        author: n.createdBy?.name || 'Admin',
+      })),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FileText, Download } from 'lucide-react';
+import Loader from '../components/Loader';
 const StudentMaterials = () => {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,10 +21,10 @@ const StudentMaterials = () => {
   return (
     <div>
       <h2 style={{ marginBottom: '2rem' }}>My Study Materials</h2>
-      {loading ? <p>Loading...</p> : (
+      {loading ? <Loader text="Loading materials..." /> : (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem' }}>
           {materials.map(mat => (
-            <div key={mat._id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+            <div key={mat._id} className="card-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
               <h4 style={{ margin: 0, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <FileText size={18} color="var(--accent-primary)" />
                 {mat.title}

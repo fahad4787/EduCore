@@ -24,8 +24,8 @@ Manage Students • Faculty • Courses • Attendance • Study Materials • A
 
 ### Demo Credentials
 
-📧 Email: `yash@gmail.com`
-🔑 Password: `yash123`
+📧 Email: `qandeer@gmail.com`
+🔑 Password: `qanderr123`
 
 ---
 

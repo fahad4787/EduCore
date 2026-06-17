@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { BookOpen, Bell, Calendar, FileText } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BookOpen, Bell, Calendar, FileText, Flame, GraduationCap } from 'lucide-react';
+import {
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+} from 'recharts';
+import { AuthContext } from '../context/AuthContext';
+import StatCard from '../components/StatCard';
+import Loader from '../components/Loader';
+import ChartCard, { ChartEmpty } from '../components/ChartCard';
+import DashboardHero from '../components/DashboardHero';
+import RecentNoticesPanel from '../components/RecentNoticesPanel';
+import { chartTooltipStyle } from '../constants/chartStyles';
 
-const ATTENDANCE_COLORS = ['#10b981', '#f43f5e'];   // Present=green, Absent=red
-const LEAVE_COLORS = { Pending: '#eab308', Approved: '#10b981', Rejected: '#f43f5e' };
+const ATTENDANCE_COLORS = ['#14805D', '#DC3545', '#DDE5E1'];
+const LEAVE_COLORS = { Pending: '#D4A017', Approved: '#14805D', Rejected: '#DC3545' };
 
-const tooltipStyle = {
-  contentStyle: {
-    background: 'var(--bg-card)', backdropFilter: 'blur(10px)',
-    border: 'none', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-md)',
-  },
+const tooltipProps = {
+  contentStyle: chartTooltipStyle,
   itemStyle: { color: 'var(--text-primary)', fontWeight: 500 },
 };
 
@@ -20,17 +27,22 @@ const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) =>
   const r = innerRadius + (outerRadius - innerRadius) * 0.5;
   return (
     <text x={cx + r * Math.cos(-midAngle * R)} y={cy + r * Math.sin(-midAngle * R)}
-      fill="white" textAnchor="middle" dominantBaseline="central"
-      fontSize={12} fontWeight="600" style={{ textShadow: '0 1px 2px rgba(0,0,0,.5)' }}>
+      fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight="600">
       {`${(percent * 100).toFixed(0)}%`}
     </text>
   );
 };
 
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
 const StudentDashboard = () => {
+  const { user } = useContext(AuthContext);
   const [stats, setStats] = useState({
     attendancePercentage: 0, noticesCount: 0, studyMaterialsCount: 0,
+    subjectCount: 0, courseName: '', presentStreak: 0,
     attendanceData: [], leaveData: [], subjectList: [],
+    attendanceTrend: [], recentAttendance: [], recentNotices: [], upcomingLeaves: [],
   });
   const [loading, setLoading] = useState(true);
 
@@ -48,107 +60,141 @@ const StudentDashboard = () => {
     fetchStats();
   }, []);
 
-  if (loading) return <div>Loading dashboard...</div>;
+  if (loading) return <Loader text="Loading dashboard..." full />;
 
+  const attendanceNum = parseFloat(stats.attendancePercentage) || 0;
   const statCards = [
-    { title: 'My Attendance', value: `${stats.attendancePercentage}%`, icon: <Calendar size={24} color="var(--accent-primary)" />, bg: 'rgba(59,130,246,0.1)' },
-    { title: 'Notices', value: stats.noticesCount, icon: <Bell size={24} color="var(--warning)" />, bg: 'rgba(245,158,11,0.1)' },
-    { title: 'Study Materials', value: stats.studyMaterialsCount, icon: <BookOpen size={24} color="var(--success)" />, bg: 'rgba(16,185,129,0.1)' },
-    {
-      title: 'Total Leaves', value: stats.leaveData.reduce((a, b) => a + b.value, 0),
-      icon: <FileText size={24} color="var(--danger)" />, bg: 'rgba(239,68,68,0.1)'
-    },
+    { title: 'My Attendance', value: `${stats.attendancePercentage}%`, subtitle: 'Overall this semester', icon: <Calendar size={24} color="var(--accent-primary)" />, iconBg: 'var(--accent-light)', trend: { positive: attendanceNum >= 75, label: attendanceNum >= 75 ? 'Above 75% threshold' : 'Below 75% threshold' } },
+    { title: 'Subjects', value: stats.subjectCount, subtitle: stats.courseName, icon: <GraduationCap size={24} color="var(--success)" />, iconBg: 'var(--accent-gold-light)' },
+    { title: 'Study Materials', value: stats.studyMaterialsCount, subtitle: 'Available to download', icon: <BookOpen size={24} color="var(--accent-gold)" />, iconBg: 'var(--accent-light)' },
+    { title: 'Notices', value: stats.noticesCount, subtitle: 'Campus announcements', icon: <Bell size={24} color="var(--accent-gold)" />, iconBg: 'var(--accent-gold-light)' },
+    { title: 'Leave Requests', value: stats.leaveData.reduce((a, b) => a + b.value, 0), subtitle: 'Total submitted', icon: <FileText size={24} color="var(--danger)" />, iconBg: 'rgba(220,53,69,0.08)' },
   ];
 
-  return (
-    <div>
-      <h2 style={{ marginBottom: '2rem' }}>Student Overview</h2>
+  const trendChartData = stats.attendanceTrend.map(d => ({
+    date: d.date,
+    value: d.status === 'Present' ? 1 : d.status === 'Absent' ? 0 : null,
+    label: d.status || 'No class',
+  }));
 
-      {/* ── Stat Cards ── */}
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-        {statCards.map((card, i) => (
-          <div key={i} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ background: card.bg, padding: '1rem', borderRadius: '50%' }}>{card.icon}</div>
-            <div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>{card.title}</p>
-              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{card.value}</h3>
-            </div>
+  return (
+    <div className="page-enter">
+      <DashboardHero
+        name={user?.name}
+        role="Student"
+        subtitle={`${stats.courseName} · Track your academic progress and stay updated.`}
+      >
+        {stats.presentStreak > 0 && (
+          <div className="attendance-streak">
+            <Flame size={16} />
+            {stats.presentStreak}-day present streak
           </div>
-        ))}
+        )}
+        <div className="dashboard-hero__stat-pill">
+          <strong>{stats.attendancePercentage}%</strong>
+          <span>Attendance</span>
+        </div>
+        <div className="dashboard-hero__stat-pill">
+          <strong>{stats.subjectCount}</strong>
+          <span>Subjects</span>
+        </div>
+      </DashboardHero>
+
+      <div className="stat-cards-grid">
+        {statCards.map((card, i) => <StatCard key={i} {...card} />)}
       </div>
 
-      {/* ── Charts Row ── */}
-      <h2 style={{ marginBottom: '1.5rem' }}>Analytics</h2>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+      <div className="dashboard-two-col">
+        <ChartCard title="My Attendance (Last 14 Days)" height={360}>
+          {trendChartData.some(d => d.value !== null) ? (
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trendChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 1]} ticks={[0, 1]} tickFormatter={(v) => v === 1 ? 'P' : 'A'} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(_, __, props) => [props.payload.label, 'Status']} {...tooltipProps} />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={28}>
+                    {trendChartData.map((d, i) => (
+                      <Cell key={i} fill={d.value === 1 ? '#14805D' : d.value === 0 ? '#DC3545' : '#DDE5E1'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : <ChartEmpty message="No attendance records yet." />}
+        </ChartCard>
 
-        {/* Attendance Chart */}
-        <div className="glass-panel" style={{ padding: '2rem 1rem', height: '380px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ marginBottom: '1rem', textAlign: 'center', fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
-            Attendance Breakdown
-          </h3>
+        <RecentNoticesPanel notices={stats.recentNotices} showContent />
+      </div>
+
+      <h3 className="dashboard-section-title">Overview</h3>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        <ChartCard title="Attendance Breakdown" height={380}>
           {stats.attendanceData.length > 0 ? (
             <div style={{ flex: 1, minHeight: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={stats.attendanceData} cx="50%" cy="50%"
-                    outerRadius={100} innerRadius={60}
+                  <Pie data={stats.attendanceData} cx="50%" cy="50%" outerRadius={100} innerRadius={60}
                     dataKey="value" labelLine={false} label={renderLabel} paddingAngle={3}>
                     {stats.attendanceData.map((_, i) => (
                       <Cell key={i} fill={ATTENDANCE_COLORS[i % 2]} stroke="transparent" />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v, n) => [v, n]} {...tooltipStyle} />
+                  <Tooltip formatter={(v, n) => [v, n]} {...tooltipProps} />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-          ) : (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-              No attendance records yet.
-            </div>
-          )}
-        </div>
+          ) : <ChartEmpty message="No attendance records yet." />}
+        </ChartCard>
 
-        {/* Leave Chart */}
-        <div className="glass-panel" style={{ padding: '2rem 1rem', height: '380px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ marginBottom: '1rem', textAlign: 'center', fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
-            Leave Requests Status
-          </h3>
+        <ChartCard title="Leave Requests Status" height={380}>
           {stats.leaveData.length > 0 ? (
             <div style={{ flex: 1, minHeight: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={stats.leaveData} cx="50%" cy="50%"
-                    outerRadius={100} innerRadius={60}
+                  <Pie data={stats.leaveData} cx="50%" cy="50%" outerRadius={100} innerRadius={60}
                     dataKey="value" labelLine={false} label={renderLabel} paddingAngle={3}>
                     {stats.leaveData.map((entry, i) => (
-                      <Cell key={i} fill={LEAVE_COLORS[entry.name] || '#6366f1'} stroke="transparent" />
+                      <Cell key={i} fill={LEAVE_COLORS[entry.name] || '#0D6E4F'} stroke="transparent" />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v, n) => [v, n]} {...tooltipStyle} />
+                  <Tooltip formatter={(v, n) => [v, n]} {...tooltipProps} />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-          ) : (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-              No leave requests yet.
+          ) : <ChartEmpty message="No leave requests yet." />}
+        </ChartCard>
+
+        {stats.upcomingLeaves?.length > 0 && (
+          <div className="card-panel dashboard-panel">
+            <div className="dashboard-panel__header">
+              <FileText size={18} color="var(--accent-gold)" />
+              <h3>Upcoming Leaves</h3>
             </div>
-          )}
-        </div>
+            <ul className="dashboard-feed">
+              {stats.upcomingLeaves.map((leave, i) => (
+                <li key={i} className="dashboard-feed__item">
+                  <div className="dashboard-feed__top">
+                    <span className="dashboard-feed__title">{formatDate(leave.date)}</span>
+                    <span className={`dashboard-badge badge-${leave.status.toLowerCase()}`}>{leave.status}</span>
+                  </div>
+                  <p className="dashboard-feed__desc">{leave.reason}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {/* ── Subjects List ── */}
-      <h2 style={{ marginBottom: '1.5rem' }}>My Course Subjects</h2>
-      <div className="glass-panel" style={{ overflowX: 'auto' }}>
+      <h3 className="dashboard-section-title">My Course Subjects</h3>
+      <div className="card-panel table-card">
         {stats.subjectList.length > 0 ? (
           <table className="data-table">
             <thead>
-              <tr>
-                <th>#</th>
-                <th>Subject Name</th>
-                <th>Faculty</th>
-              </tr>
+              <tr><th>#</th><th>Subject Name</th><th>Faculty</th></tr>
             </thead>
             <tbody>
               {stats.subjectList.map((sub, i) => (

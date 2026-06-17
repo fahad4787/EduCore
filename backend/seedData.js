@@ -117,9 +117,12 @@ const seedData = async () => {
     const createdProfessors = [];
 
     for (let i = 0; i < 7; i++) {
-      const profName = getFullName();
-      const emailPrefix = profName.split(' ')[0].toLowerCase();
-      const profEmail = `prof.${emailPrefix}${i + 1}@university.com`;
+      const isDemoProf = i === 0;
+      const profName = isDemoProf ? 'Qandeer' : getFullName();
+      const emailPrefix = isDemoProf ? 'qandeer' : profName.split(' ')[0].toLowerCase();
+      const profEmail = isDemoProf
+        ? 'prof.qandeer@university.com'
+        : `prof.${emailPrefix}${i + 1}@university.com`;
       const assignedCourseIds = profCourseMappings[i].map(idx => createdCourses[idx]._id);
 
       const professor = new User({
@@ -159,9 +162,28 @@ const seedData = async () => {
       }
     }
 
-    // 6. Create exactly 50 Students (5 students per course)
+    // 6. Create demo student (README credentials)
+    const demoPassword = await bcrypt.hash('qanderr123', salt);
+    const bcaCourse = createdCourses.find(c => c.name === 'BCA');
+    const demoStudent = new User({
+      name: 'Qandeer',
+      email: 'qandeer@gmail.com',
+      password: demoPassword,
+      role: 'Student',
+      enrolledCourse: bcaCourse._id,
+      gender: 'Male',
+      enrollmentNumber: '26BCA001',
+      mobileNumber: '9876543210',
+      category: 'General',
+      year: '2nd Year',
+      admissionDate: new Date('2024-07-15')
+    });
+    await demoStudent.save();
+    const createdStudents = [demoStudent];
+    console.log('Created demo student: qandeer@gmail.com / qanderr123');
+
+    // 7. Create 50 more students (5 per course)
     const defaultStudentPassword = await bcrypt.hash('student123', salt);
-    const createdStudents = [];
 
     for (const course of createdCourses) {
       for (let i = 0; i < 5; i++) {
@@ -194,9 +216,9 @@ const seedData = async () => {
       }
       console.log(`Added 5 students to course ${course.name}`);
     }
-    console.log(`Successfully created exactly ${createdStudents.length} students.`);
+    console.log(`Successfully created ${createdStudents.length} students.`);
 
-    // 7. Add Attendance Records (last 10 days for each student, weekdays only)
+    // 8. Add Attendance Records (last 30 weekdays for each student)
     const today = new Date();
     let attendanceCount = 0;
 
@@ -207,7 +229,7 @@ const seedData = async () => {
       );
       const markingProf = courseProfs[Math.floor(Math.random() * courseProfs.length)] || createdProfessors[0];
 
-      for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
+      for (let dayOffset = 0; dayOffset < 45; dayOffset++) {
         const attendanceDate = new Date();
         attendanceDate.setDate(today.getDate() - dayOffset);
 
@@ -232,7 +254,7 @@ const seedData = async () => {
     }
     console.log(`Created ${attendanceCount} attendance records.`);
 
-    // 8. Add Leave Requests (for 15 random students)
+    // 9. Add Leave Requests (for 20 random students)
     const leaveReasons = [
       'Suffering from viral fever and advised bed rest',
       'Attending sister\'s wedding ceremony in hometown',
@@ -242,7 +264,7 @@ const seedData = async () => {
     ];
     const leaveStatuses = ['Pending', 'Approved', 'Rejected'];
     const shuffledStudents = [...createdStudents].sort(() => 0.5 - Math.random());
-    const studentsForLeave = shuffledStudents.slice(0, 15);
+    const studentsForLeave = shuffledStudents.slice(0, 20);
 
     for (let i = 0; i < studentsForLeave.length; i++) {
       const student = studentsForLeave[i];
@@ -268,7 +290,7 @@ const seedData = async () => {
       console.log(`Created Leave Request for ${student.name} - Status: ${status}`);
     }
 
-    // 9. Add Notices
+    // 10. Add Notices
     const noticesData = [
       {
         title: 'Welcome to the New Academic Session 2026',
@@ -299,6 +321,24 @@ const seedData = async () => {
         content: 'Registrations are now open for the annual technical festival. Students can participate in various events like Coding, Web Design, and Robo-Wars.',
         audience: 'All',
         creatorRole: 'Professor'
+      },
+      {
+        title: 'Library Extended Hours During Exam Week',
+        content: 'The central library will remain open until 10 PM during the examination period. Students can access study rooms on the 2nd floor.',
+        audience: 'Student',
+        creatorRole: 'Admin'
+      },
+      {
+        title: 'Campus Wi-Fi Maintenance — Saturday',
+        content: 'Network maintenance is scheduled this Saturday from 2 AM to 6 AM. Campus Wi-Fi may be intermittently unavailable.',
+        audience: 'All',
+        creatorRole: 'Admin'
+      },
+      {
+        title: 'Research Grant Applications Open',
+        content: 'Faculty members are invited to submit research grant proposals for the 2026–27 academic cycle. Deadline: end of this month.',
+        audience: 'Professor',
+        creatorRole: 'Admin'
       }
     ];
 
@@ -321,25 +361,38 @@ const seedData = async () => {
       console.log(`Created Notice: "${noticeData.title}" for audience: ${noticeData.audience}`);
     }
 
-    // 10. Add Study Materials (1 introductory material per course)
+    // 12. Add Study Materials (3 per course)
+    const materialTemplates = [
+      { suffix: 'Syllabus', desc: 'Complete syllabus and course outline' },
+      { suffix: 'Unit 1 Notes', desc: 'Lecture notes for Unit 1' },
+      { suffix: 'Assignment Guide', desc: 'Guidelines and sample questions for assignments' }
+    ];
     for (const course of createdCourses) {
       const courseProfs = createdProfessors.filter(prof =>
         prof.assignedCourses.some(cId => cId.equals(course._id))
       );
-      const uploadingProf = courseProfs[Math.floor(Math.random() * courseProfs.length)] || createdProfessors[0];
+      const courseSubjects = await Subject.find({ course: course._id });
 
-      const studyMaterial = new StudyMaterial({
-        title: `${course.name} Introduction & Syllabus`,
-        description: `Introductory guide and syllabus details for ${course.name}.`,
-        fileUrl: `uploads/materials/${course.name.toLowerCase()}_intro.pdf`,
-        course: course._id,
-        uploadedBy: uploadingProf._id
-      });
-      await studyMaterial.save();
-      console.log(`Created Study Material for ${course.name}`);
+      for (let m = 0; m < materialTemplates.length; m++) {
+        const uploadingProf = courseProfs[m % courseProfs.length] || createdProfessors[0];
+        const tpl = materialTemplates[m];
+        await new StudyMaterial({
+          title: `${course.name} — ${tpl.suffix}`,
+          description: `${tpl.desc} for ${course.name}.`,
+          fileUrl: `uploads/materials/${course.name.toLowerCase().replace('.', '')}_${m + 1}.pdf`,
+          course: course._id,
+          uploadedBy: uploadingProf._id
+        }).save();
+      }
+      console.log(`Created 3 study materials for ${course.name} (${courseSubjects.length} subjects)`);
     }
 
-    console.log('\nSeeding completed successfully!');
+    console.log('\n✅ Seeding completed successfully!');
+    console.log('\nLogin credentials:');
+    console.log('  Admin:     admin@university.com / admin123');
+    console.log('  Professor: prof.qandeer@university.com / prof123');
+    console.log('  Student:   qandeer@gmail.com / qanderr123  (demo)');
+    console.log('  Students:  <email from seed> / student123');
     process.exit(0);
   } catch (err) {
     console.error('Error during seeding:', err);

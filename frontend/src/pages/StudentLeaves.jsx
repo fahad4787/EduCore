@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Send } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import FormModal from '../components/FormModal';
+import TableLoading from '../components/TableLoading';
 const StudentLeaves = () => {
   const [leaves, setLeaves] = useState([]);
   const { showToast } = useToast();
@@ -50,29 +52,29 @@ const StudentLeaves = () => {
       <div className="page-header">
         <h2>My Leave Requests</h2>
         <div className="page-header-actions">
-          <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-            <Send size={18} style={{ marginRight: '0.5rem' }} /> Apply for Leave
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            <Send size={18} /> Apply for Leave
           </button>
         </div>
       </div>
-      {showForm && (
-        <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-          <h3>Apply for Leave</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Date</label>
-              <input type="date" className="form-input" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} min={new Date().toISOString().split('T')[0]} required />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Reason for leave</label>
-              <textarea className="form-input" rows="3" value={formData.reason} onChange={(e) => setFormData({ ...formData, reason: e.target.value })} required></textarea>
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ marginRight: '1rem' }}>Submit Request</button>
-            <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-          </form>
+      <FormModal
+        isOpen={showForm}
+        title="Apply for Leave"
+        onClose={() => setShowForm(false)}
+        onSubmit={handleSubmit}
+        submitText="Submit Request"
+        size="sm"
+      >
+        <div className="form-group">
+          <label className="form-label">Date</label>
+          <input type="date" className="form-input" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} min={new Date().toISOString().split('T')[0]} required />
         </div>
-      )}
-      <div className="glass-panel" style={{ overflowX: 'auto' }}>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="form-label">Reason for leave</label>
+          <textarea className="form-input" rows="3" value={formData.reason} onChange={(e) => setFormData({ ...formData, reason: e.target.value })} required />
+        </div>
+      </FormModal>
+      <div className="card-panel table-card">
         <table className="data-table">
           <thead>
             <tr>
@@ -83,7 +85,7 @@ const StudentLeaves = () => {
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan="4" className="text-center">Loading...</td></tr> :
+            {loading ? <TableLoading cols={4} /> :
               leaves.map(leave => (
                 <tr key={leave._id}>
                   <td>{formatDate(leave.date)}</td>

@@ -9,6 +9,7 @@ import ProfMaterials from '../pages/ProfMaterials';
 import ManageLeaves from '../pages/ManageLeaves';
 import NoticeBoard from '../pages/NoticeBoard';
 import ProfProfile from '../pages/ProfProfile';
+import AiChat from '../components/AiChat';
 
 const ProfessorLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,7 +34,7 @@ const ProfessorLayout = () => {
 
       <div className="prof-layout-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ position: 'sticky', top: 0, zIndex: 50, flexShrink: 0 }}>
-          <TopNav title="Professor Portal" onMenuToggle={() => setSidebarOpen(prev => !prev)} />
+          <TopNav title="EduCore Professor" onMenuToggle={() => setSidebarOpen(prev => !prev)} />
         </div>
         <div style={{ padding: '1.5rem 2rem', flex: 1, overflowY: 'auto', height: '100%' }}>
           <Routes>
@@ -49,6 +50,7 @@ const ProfessorLayout = () => {
           </Routes>
         </div>
       </div>
+      <AiChat />
     </div>
   );
 };

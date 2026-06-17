@@ -9,6 +9,7 @@ import AdminSubjects from '../pages/AdminSubjects';
 import NoticeBoard from '../pages/NoticeBoard';
 import ManageLeaves from '../pages/ManageLeaves';
 import AdminProfile from '../pages/AdminProfile';
+import AiChat from '../components/AiChat';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -36,7 +37,7 @@ const AdminLayout = () => {
       {/* Main content area */}
       <div className="admin-layout-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ position: 'sticky', top: 0, zIndex: 50, flexShrink: 0 }}>
-          <TopNav title="System Administration" onMenuToggle={() => setSidebarOpen(prev => !prev)} />
+          <TopNav title="EduCore Admin" onMenuToggle={() => setSidebarOpen(prev => !prev)} />
         </div>
         <div style={{ padding: '1.5rem 2rem', flex: 1, overflowY: 'auto', height: '100%' }}>
           <Routes>
@@ -53,6 +54,7 @@ const AdminLayout = () => {
           </Routes>
         </div>
       </div>
+      <AiChat />
     </div>
   );
 };

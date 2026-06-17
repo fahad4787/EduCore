@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UserPlus, Edit2, Trash2 } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import FormModal from '../components/FormModal';
+import TableLoading from '../components/TableLoading';
+import TableActions from '../components/TableActions';
 import { useToast } from '../context/ToastContext';
 const AdminUsers = ({ userRole }) => {
   const { showToast } = useToast();
@@ -86,19 +89,33 @@ const AdminUsers = ({ userRole }) => {
         await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/users`, payload);
       }
       setShowForm(false);
-      setEditingId(null);
-      setSubjects([]);
-      setFormData({
-        name: '', email: '', password: '', role: userRole, enrolledCourse: '', assignedCourses: [],
-        selectedSubjects: [],
-        gender: '', dateOfBirth: '', mobileNumber: '', category: '',
-        city: '', state: '', pincode: '', parentName: '', parentContact: '', isHandicapped: 'false'
-      });
+      resetForm();
       fetchUsers();
     } catch (err) {
       showToast(err.response?.data?.message || 'Error saving user', 'error');
     }
   };
+  const resetForm = () => {
+    setEditingId(null);
+    setSubjects([]);
+    setFormData({
+      name: '', email: '', password: '', role: userRole, enrolledCourse: '', assignedCourses: [],
+      selectedSubjects: [],
+      gender: '', dateOfBirth: '', mobileNumber: '', category: '',
+      city: '', state: '', pincode: '', parentName: '', parentContact: '', isHandicapped: 'false'
+    });
+  };
+
+  const openAddForm = () => {
+    resetForm();
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    resetForm();
+  };
+
   const handleDelete = (id) => {
     setDeleteTarget(id);
   };
@@ -193,25 +210,20 @@ const AdminUsers = ({ userRole }) => {
               {courses.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
             </select>
           )}
-          <button className="btn btn-primary" onClick={() => {
-            setShowForm(!showForm);
-            setEditingId(null);
-            setSubjects([]);
-            setFormData({
-              name: '', email: '', password: '', role: userRole, enrolledCourse: '', assignedCourses: [],
-              selectedSubjects: [],
-              gender: '', dateOfBirth: '', mobileNumber: '', category: '',
-              city: '', state: '', pincode: '', parentName: '', parentContact: '', isHandicapped: 'false'
-            });
-          }}>
-            <UserPlus size={18} style={{ marginRight: '0.5rem' }} /> Add {userRole}
+          <button className="btn btn-primary" onClick={openAddForm}>
+            <UserPlus size={18} /> Add {userRole}
           </button>
         </div>
       </div>
-      {showForm && (
-        <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-          <h3>{editingId ? 'Edit' : 'Add'} {userRole}</h3>
-          <form onSubmit={handleSubmit} className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+      <FormModal
+        isOpen={showForm}
+        title={`${editingId ? 'Edit' : 'Add'} ${userRole}`}
+        onClose={closeForm}
+        onSubmit={handleSubmit}
+        submitText={editingId ? 'Update' : 'Create'}
+        size="lg"
+      >
+        <div className="form-modal-grid">
             <div className="form-group">
               <label className="form-label">Name</label>
               <input type="text" className="form-input" placeholder="Enter Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
@@ -367,14 +379,9 @@ const AdminUsers = ({ userRole }) => {
                 )}
               </>
             )}
-            <div style={{ gridColumn: 'span 2' }}>
-              <button type="submit" className="btn btn-primary" style={{ marginRight: '1rem' }}>Save changes</button>
-              <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-            </div>
-          </form>
         </div>
-      )}
-      <div className="glass-panel" style={{ overflowX: 'auto' }}>
+      </FormModal>
+      <div className="card-panel table-card">
         <table className="data-table">
           <thead>
             <tr>
@@ -388,7 +395,7 @@ const AdminUsers = ({ userRole }) => {
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan="4" className="text-center">Loading...</td></tr> :
+            {loading ? <TableLoading cols={4} /> :
               filteredUsers.map(user => (
                 <tr key={user._id}>
                   <td>{user.name}</td>
@@ -405,8 +412,7 @@ const AdminUsers = ({ userRole }) => {
                     </td>
                   )}
                   <td>
-                    <button onClick={() => handleEdit(user)} style={{ background: 'transparent', color: 'var(--accent-primary)', marginRight: '1rem' }}><Edit2 size={18} /></button>
-                    <button onClick={() => handleDelete(user._id)} style={{ background: 'transparent', color: 'var(--danger)' }}><Trash2 size={18} /></button>
+                    <TableActions onEdit={() => handleEdit(user)} onDelete={() => handleDelete(user._id)} />
                   </td>
                 </tr>
               ))}

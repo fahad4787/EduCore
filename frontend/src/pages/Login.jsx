@@ -2,17 +2,22 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
-import DDULogo from "../assets/DDU-logo.jpg";
-import CollegeBg from "../assets/DDU-College.jpg";
+import BrandLogo from '../components/BrandLogo';
+import InputField from '../components/InputField';
+import './Login.css';
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setSubmitting(true);
     try {
       const userData = await login(email, password);
       if (userData.role === 'Admin') navigate('/admin');
@@ -20,72 +25,113 @@ const Login = () => {
       if (userData.role === 'Student') navigate('/student');
     } catch (err) {
       setError(err);
+    } finally {
+      setSubmitting(false);
     }
   };
+
   return (
-    <div className="app-container" style={{
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${CollegeBg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', background: 'rgba(255, 255, 255, 0.6)' }}>
-        <div className="text-center mb-4">
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-            <div style={{ padding: '0.2rem', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '90px', height: '90px', overflow: 'hidden', border: '3px solid var(--accent-primary)', boxShadow: 'var(--shadow-md)' }}>
-              <img src={DDULogo} alt="Nexus Logo" style={{ width: '100%', height: 'auto' }} />
+    <div className="login-page">
+      <div className="login-hero">
+        <div className="login-hero__pattern" />
+        <div className="login-hero__orb login-hero__orb--1" />
+        <div className="login-hero__orb login-hero__orb--2" />
+        <div className="login-hero__content">
+          <BrandLogo size="lg" variant="light" />
+          <h1 className="login-hero__headline">
+            Manage Your Campus <span>Smarter</span>
+          </h1>
+          <p className="login-hero__desc">
+            A unified platform for students, faculty, and administrators to manage courses, attendance, results, and more.
+          </p>
+          <div className="login-hero__features">
+            <div className="login-hero__feature">
+              <span className="login-hero__feature-dot" />
+              Role-based dashboards for every user
+            </div>
+            <div className="login-hero__feature">
+              <span className="login-hero__feature-dot" />
+              Real-time attendance and academic tracking
+            </div>
+            <div className="login-hero__feature">
+              <span className="login-hero__feature-dot" />
+              Secure access with JWT authentication
             </div>
           </div>
-          <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Nexus University</h2>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontWeight: '500', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.85rem' }}>LOGIN</p>
         </div>
-        {error && (
-          <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeft: '4px solid var(--danger)', padding: '1rem', marginBottom: '1.5rem', borderRadius: '0 var(--radius-md) var(--radius-md) 0', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <AlertCircle size={20} color="var(--danger)" />
-            <span style={{ color: 'var(--danger)', fontSize: '0.875rem' }}>{error}</span>
-          </div>
-        )}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">Email Address</label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={18} style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input
-                id="email"
-                type="email"
-                className="form-input"
-                style={{ paddingLeft: '2.5rem' }}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@gmail.com"
-                required
-              />
+      </div>
+
+      <div className="login-form-side">
+        <div className="card-panel login-card">
+          <div className="login-card__header">
+            <BrandLogo />
+            <h2 className="login-card__title">Welcome back</h2>
+            <p className="login-card__subtitle">Sign in to your account to continue</p>
+            <div className="login-card__roles">
+              <span className="login-card__role">Admin</span>
+              <span className="login-card__role">Professor</span>
+              <span className="login-card__role">Student</span>
             </div>
           </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">Password</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={18} style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input
-                id="password"
-                type="password"
-                className="form-input"
-                style={{ paddingLeft: '2.5rem' }}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="•••••••••••"
-                required
-              />
+
+          {error && (
+            <div className="alert-error" style={{ marginBottom: '1.25rem' }}>
+              <AlertCircle size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <InputField
+              id="email"
+              label="Email Address"
+              type="email"
+              icon={Mail}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@university.edu"
+              required
+            />
+            <InputField
+              id="password"
+              label="Password"
+              type="password"
+              icon={Lock}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+            />
+            <button type="submit" className="btn btn-primary login-submit" disabled={submitting}>
+              {submitting ? (
+                <span className="loader-spinner sm" />
+              ) : (
+                <><LogIn size={18} /> Sign In</>
+              )}
+            </button>
+          </form>
+
+          <div className="login-demo-creds">
+            <p className="login-demo-creds__title">Demo accounts (after seeding)</p>
+            <div className="login-demo-creds__grid">
+              <button type="button" className="login-demo-creds__item" onClick={() => { setEmail('admin@university.com'); setPassword('admin123'); }}>
+                <strong>Admin</strong>
+                <span>admin@university.com</span>
+              </button>
+              <button type="button" className="login-demo-creds__item" onClick={() => { setEmail('prof.qandeer@university.com'); setPassword('prof123'); }}>
+                <strong>Professor</strong>
+                <span>prof.qandeer@university.com</span>
+              </button>
+              <button type="button" className="login-demo-creds__item" onClick={() => { setEmail('qandeer@gmail.com'); setPassword('qanderr123'); }}>
+                <strong>Student</strong>
+                <span>qandeer@gmail.com</span>
+              </button>
             </div>
           </div>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', padding: '0.875rem' }}>
-            Sign In
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );
 };
+
 export default Login;

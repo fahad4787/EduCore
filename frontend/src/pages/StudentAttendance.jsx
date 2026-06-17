@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Calendar, UserCheck, UserX } from 'lucide-react';
+import Loader from '../components/Loader';
+import StatCard from '../components/StatCard';
 const StudentAttendance = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,31 +28,21 @@ const StudentAttendance = () => {
   const presentDays = attendance.filter(a => a.status === 'Present').length;
   const absentDays = attendance.filter(a => a.status === 'Absent').length;
   const statCards = [
-    { title: 'Total Days', value: totalDays, icon: <Calendar size={24} color="var(--accent-primary)" />, bg: 'rgba(59, 130, 246, 0.1)' },
-    { title: 'Present', value: presentDays, icon: <UserCheck size={24} color="var(--success)" />, bg: 'rgba(16, 185, 129, 0.1)' },
-    { title: 'Absent', value: absentDays, icon: <UserX size={24} color="var(--danger)" />, bg: 'rgba(239, 68, 68, 0.1)' },
+    { title: 'Total Days', value: totalDays, icon: <Calendar size={24} color="var(--accent-primary)" />, iconBg: 'var(--accent-light)' },
+    { title: 'Present', value: presentDays, icon: <UserCheck size={24} color="var(--success)" />, iconBg: 'var(--accent-light)' },
+    { title: 'Absent', value: absentDays, icon: <UserX size={24} color="var(--danger)" />, iconBg: 'rgba(220,53,69,0.08)' },
   ];
-  if (loading) {
-    return <div>Loading attendance...</div>;
-  }
+  if (loading) return <Loader text="Loading attendance..." full />;
   return (
-    <div>
+    <div className="page-enter">
       <h2 style={{ marginBottom: '2rem' }}>Attendance Overview</h2>
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
         {statCards.map((card, index) => (
-          <div key={index} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ background: card.bg, padding: '1rem', borderRadius: '50%' }}>
-              {card.icon}
-            </div>
-            <div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>{card.title}</p>
-              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{card.value}</h3>
-            </div>
-          </div>
+          <StatCard key={index} {...card} />
         ))}
       </div>
       <h2 style={{ marginBottom: '2rem' }}>My Attendance</h2>
-      <div className="glass-panel" style={{ overflowX: 'auto' }}>
+      <div className="card-panel table-card">
         <table className="data-table">
           <thead>
             <tr>

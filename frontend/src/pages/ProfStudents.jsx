@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Filter } from 'lucide-react';
+import TableLoading from '../components/TableLoading';
 
 const ProfStudents = () => {
   const [students, setStudents] = useState([]);
@@ -56,7 +57,7 @@ const ProfStudents = () => {
 
       {/* Search + Filter Bar */}
       <div
-        className="glass-panel"
+        className="card-panel"
         style={{
           padding: '1rem 1.5rem',
           marginBottom: '1.5rem',
@@ -118,7 +119,7 @@ const ProfStudents = () => {
       </div>
 
       {/* Table */}
-      <div className="glass-panel" style={{ overflowX: 'auto' }}>
+      <div className="card-panel table-card">
         <table className="data-table">
           <thead>
             <tr>
@@ -131,7 +132,7 @@ const ProfStudents = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="5" className="text-center">Loading...</td></tr>
+              <TableLoading cols={5} />
             ) : filtered.length > 0 ? (
               filtered.map(student => (
                 <tr key={student._id}>

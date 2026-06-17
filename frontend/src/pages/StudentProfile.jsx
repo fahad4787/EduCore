@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import Loader from '../components/Loader';
 import {
   User, Mail, Phone, BookOpen, MapPin, Calendar,
   Shield, UserCheck, Hash, Heart, Lock, Save
@@ -64,22 +65,24 @@ const StudentProfile = () => {
     }
   };
 
-  if (loading) return <div>Loading profile...</div>;
+  if (loading) return <Loader text="Loading profile..." full />;
   if (!profile) return <div>Could not load profile.</div>;
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
   const initials = profile.name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
   return (
-    <div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+    <div className="profile-page page-enter">
+      <div className="page-header">
+        <h2 style={{ margin: 0 }}>My Profile</h2>
+      </div>
+      <div className="profile-grid" style={{ gridTemplateColumns: '1fr 1.2fr' }}>
 
         {/* ── LEFT: Avatar + quick info ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
           {/* Avatar card */}
-          <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
+          <div className="card-panel" style={{ padding: '2rem', textAlign: 'center' }}>
             <div style={{
               width: '90px', height: '90px', borderRadius: '50%',
               background: 'var(--accent-gradient)',
@@ -103,7 +106,7 @@ const StudentProfile = () => {
           </div>
 
           {/* Enrollment + IDs */}
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <div className="card-panel" style={{ padding: '1.5rem' }}>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Student ID</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Hash size={18} color="var(--accent-primary)" />
@@ -114,7 +117,7 @@ const StudentProfile = () => {
           </div>
 
           {/* Status badges */}
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <div className="card-panel" style={{ padding: '1.5rem' }}>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Status</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
               {[
@@ -135,7 +138,7 @@ const StudentProfile = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
           {/* Personal Information */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="card-panel" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--text-secondary)' }}>Personal Information</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0 2rem' }}>
               <Field icon={<User size={15} />} label="Full Name" value={profile.name} />
@@ -150,7 +153,7 @@ const StudentProfile = () => {
           </div>
 
           {/* Parent Info */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="card-panel" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--text-secondary)' }}>Parent / Guardian</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0 2rem' }}>
               <Field icon={<Heart size={15} />} label="Parent Name" value={profile.parentName} />
@@ -159,7 +162,7 @@ const StudentProfile = () => {
           </div>
 
           {/* Account Settings */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="card-panel" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--text-secondary)' }}>Account Settings</h3>
 
             {message.text && (

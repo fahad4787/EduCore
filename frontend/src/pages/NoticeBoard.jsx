@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Bell, Trash2, PlusCircle } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import FormModal from '../components/FormModal';
 import { useToast } from '../context/ToastContext';
 const NoticeBoard = () => {
   const { user } = useContext(AuthContext);
@@ -69,42 +70,44 @@ const NoticeBoard = () => {
         <h2>Notice Board</h2>
         {user.role === 'Admin' && (
           <div className="page-header-actions">
-            <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-              <PlusCircle size={18} style={{ marginRight: '0.5rem' }} /> Add Notice
+            <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+              <PlusCircle size={18} /> Add Notice
             </button>
           </div>
         )}
       </div>
       {showForm && user.role === 'Admin' && (
-        <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-          <h3>Add New Notice</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Title</label>
-              <input type="text" className="form-input" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Content</label>
-              <textarea className="form-input" rows="4" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} required></textarea>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Audience</label>
-              <select className="form-input" value={formData.audience} onChange={(e) => setFormData({ ...formData, audience: e.target.value })}>
-                <option value="All">All Users</option>
-                <option value="Admin">Admin Only</option>
-                <option value="Professor">Professors</option>
-                <option value="Student">Students</option>
-              </select>
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ marginRight: '1rem' }}>Publish Notice</button>
-            <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-          </form>
-        </div>
+        <FormModal
+          isOpen={showForm}
+          title="Add New Notice"
+          onClose={() => setShowForm(false)}
+          onSubmit={handleSubmit}
+          submitText="Publish Notice"
+          size="md"
+        >
+          <div className="form-group">
+            <label className="form-label">Title</label>
+            <input type="text" className="form-input" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Content</label>
+            <textarea className="form-input" rows="4" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} required />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Audience</label>
+            <select className="form-input" value={formData.audience} onChange={(e) => setFormData({ ...formData, audience: e.target.value })}>
+              <option value="All">All Users</option>
+              <option value="Admin">Admin Only</option>
+              <option value="Professor">Professors</option>
+              <option value="Student">Students</option>
+            </select>
+          </div>
+        </FormModal>
       )}
       {loading ? <p>Loading notices...</p> : (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
           {notices.map(notice => (
-            <div key={notice._id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+            <div key={notice._id} className="card-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
               <div className="flex justify-between items-start mb-2">
                 <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Bell size={18} color="var(--accent-primary)" />

@@ -59,7 +59,7 @@ const ProfAttendance = () => {
       <div className="page-header">
         <h2>Mark Attendance</h2>
       </div>
-      <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+      <div className="card-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           <div className="form-group mb-0">
             <label className="form-label">Course</label>
@@ -75,7 +75,7 @@ const ProfAttendance = () => {
         </div>
       </div>
       {selectedCourse && (
-        <div className="glass-panel">
+        <div className="card-panel">
           <table className="data-table">
             <thead>
               <tr>

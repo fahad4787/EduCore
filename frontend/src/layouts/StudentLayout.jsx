@@ -7,6 +7,7 @@ import StudentAttendance from '../pages/StudentAttendance';
 import StudentMaterials from '../pages/StudentMaterials';
 import StudentLeaves from '../pages/StudentLeaves';
 import NoticeBoard from '../pages/NoticeBoard';
+import AiChat from '../components/AiChat';
 
 const StudentLayout = () => {
   const routes = [
@@ -33,6 +34,7 @@ const StudentLayout = () => {
           <Route path="*" element={<StudentDashboard />} />
         </Routes>
       </div>
+      <AiChat />
     </div>
   );
 };
